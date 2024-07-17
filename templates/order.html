@@ -1,0 +1,311 @@
+<!-- users-profile.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main id="main" class="main">
+
+    <section class="section profile">
+        <div class="row">
+            <div class="col-xl-12">
+
+                <div class="card">
+                    <div class="card-body pt-3">
+                        <!-- Bordered Tabs -->
+                        <ul class="nav nav-tabs nav-tabs-bordered">
+
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab"
+                                    data-bs-target="#profile-overview">All orders</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Add
+                                    Ordder</button>
+                            </li>
+
+
+
+                        </ul>
+                        <div class="tab-content pt-2">
+
+                            <div class="tab-pane fade show active profile-overview" id="profile-overview">
+
+                                <div class="search-bar">
+                                    <form class="search-form d-flex align-items-center" id="searchForm">
+                                        <input type="text" name="search_query" id="searchQuery" placeholder="Search Number"
+                                            title="Enter search keyword">
+                                        <button type="submit" title="Search" id="searchBtn"><i class="bi bi-search"></i></button>
+                                    </form>
+                                </div>
+
+                                <br>
+                                <div id="searchResults">
+                                    <!-- Results will be displayed here -->
+                                </div>
+                                <br>
+                                <div>
+                                    <div class="filter">
+                                        <a class="icon" href="#" data-bs-toggle="dropdown">Filters<i
+                                                class="bi bi-filter" style="margin-left:5px ;"></i></a>
+                                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+
+                                            <li><a class="dropdown-item" href="#"
+                                                    onclick="applyFilter('today')">Today</a></li>
+                                            <li><a class="dropdown-item" href="#"
+                                                    onclick="applyFilter('this_month')">This Month</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="showCustomRange()">Custom
+                                                    Range</a></li>
+                                        </ul>
+                                    </div>
+                                    <form id="filterForm" method="POST">
+                                        <input type="hidden" name="filter_option" id="filterOption">
+                                        <input type="date" name="start_date" id="startDate" style="display: none;">
+                                        <input type="date" name="end_date" id="endDate" style="display: none;">
+                                    </form>
+                                </div>
+                                {% if message != None%}
+                                <div class="alert alert-info" role="alert">
+                                    {{ message }}
+                                </div>
+                                {% endif %}
+
+                                <br>
+                                <div style="height: 400px; overflow-y: auto;">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Id</th>
+                                                <th scope="col">Time</th>
+                                                <th scope="col">Status</th>
+                                                <th scope="col">Customer</th>
+                                                <th scope="col">Customer Phone</th>
+                                                <th scope="col">Customer VIN</th>
+                                                <th scope="col">Package</th>
+                                                <th scope="col">Agent</th>
+                                                <th scope="col">Screenshot</th>
+                                                <th scope="col">Approve</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in orders %}
+                                            <tr>
+                                                <td>{{ order.order_id }}</td>
+                                                <td>{{ order.time }}</td>
+                                                <td>{{ order.status }}</td>
+                                                <td>{{ order.customer_name }}</td>
+                                                <td>{{ order.customer_phone }}</td>
+                                                <td>{{ order.customer_vin }}</td>
+                                                <td>{{ order.package }}</td>
+                                                <td>{{ order.agent_name }}</td>
+                                                <td><a href="{{ url_for('screenshot', order_id=order.id) }}"
+                                                        target="_blank">VIEW IMG</a></td>
+                                                <td>
+                                                    <form
+                                                        action="{{ url_for('update_approve_status', order_id=order.id) }}"
+                                                        method="POST">
+                                                        <select name="approve_status" onchange="this.form.submit()"
+                                                            id="approve_status_select">
+                                                            <option value="Pending" {% if order.approve=='Pending' %}
+                                                                selected {% endif %}>Pending</option>
+                                                            <option value="Approved" {% if order.approve=='Approved' %}
+                                                                selected {% endif %}>Approved</option>
+                                                            <option value="Rejected" {% if order.approve=='Rejected' %}
+                                                                selected {% endif %}>Rejected</option>
+                                                        </select>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <div class="tab-pane fade pt-3" id="profile-settings">
+                                <form method="POST" action="/add_order" enctype="multipart/form-data">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="orderId" class="col-form-label">Order Id</label>
+                                            <input name="orderId" type="text" required class="form-control"
+                                                id="orderId">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="time" class="col-form-label">Time</label>
+                                            <input name="time" type="datetime-local" required class="form-control"
+                                                id="time">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="orderStatus" class="col-form-label">Order Status</label>
+                                            <input name="orderStatus" type="text" required class="form-control"
+                                                id="orderStatus">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="customerName" class="col-form-label">Customer Name</label>
+                                            <input name="customerName" required type="text" class="form-control"
+                                                id="customerName">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="customerPhone" class="col-form-label">Customer Phone</label>
+                                            <input name="customerPhone" required type="text" class="form-control"
+                                                id="customerPhone">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="customerVIN" class="col-form-label">Customer VIN</label>
+                                            <input name="customerVIN" required type="text" class="form-control"
+                                                id="customerVIN">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="package" class="col-form-label">Package</label>
+                                            <select name="package" required class="form-control" id="package">
+                                                <option value="Silver">Silver</option>
+                                                <option value="Gold">Gold</option>
+                                                <option value="Platinum">Platinum</option>
+                                                <option value="Diamond">Diamond</option>
+                                                <option value="Ruby">Ruby</option>
+                                                <option value="Sapphire">Sapphire</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="agentName" class="col-form-label">Agent Name</label>
+                                            <select name="agentName" class="form-control" id="agentName">
+                                                {% for agent in sales_agents %}
+                                                <option value="{{ agent.user }}">{{ agent.user }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="screenshot" class="col-form-label">Upload Screenshot</label>
+                                            <input name="screenshot" type="file" class="form-control" id="screenshot">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="approve" class="col-form-label">Approve</label>
+                                            <select name="approve" class="form-control" id="approve">
+                                                <option value="Pending">Pending</option>
+                                                <option value="Approved">Approved</option>
+                                                <option value="Rejected">Rejected</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-primary">Add</button>
+                                    </div>
+                                </form>
+                            </div>
+
+
+
+
+                        </div><!-- End Bordered Tabs -->
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</main><!-- End #main -->
+<script>
+//     document.addEventListener('DOMContentLoaded', function () {
+//         var selectElement = document.getElementById('approve_status_select');
+//         if (selectElement.value === 'Approved' || selectElement.value === 'Rejected') {
+//             selectElement.disabled = true;
+//         }
+//     });
+// </script>
+<script>
+    // Apply filter immediately for today and this month
+    function applyFilter(option) {
+        document.getElementById('filterOption').value = option;
+        document.getElementById('startDate').style.display = 'none';
+        document.getElementById('endDate').style.display = 'none';
+
+        if (option !== 'custom') {
+            document.getElementById('filterForm').submit();
+        }
+    }
+
+    // Show custom date range inputs
+    function showCustomRange() {
+        document.getElementById('filterOption').value = 'custom';
+        document.getElementById('startDate').style.display = 'inline';
+        document.getElementById('endDate').style.display = 'inline';
+    }
+
+    // Submit the form if both dates are selected
+    function submitCustomRange() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        if (startDate && endDate) {
+            document.getElementById('filterForm').submit();
+        } else {
+            console.log('Please select both start and end dates.');
+        }
+    }
+
+    // Event listeners for custom date range inputs
+    document.getElementById('startDate').addEventListener('change', submitCustomRange);
+    document.getElementById('endDate').addEventListener('change', submitCustomRange);
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.getElementById('searchForm');
+        const searchQuery = document.getElementById('searchQuery');
+        const searchResults = document.getElementById('searchResults');
+
+        searchForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent form submission
+            const formData = new FormData(searchForm);
+
+            fetch('/search', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.assigned_numbers) {
+                    // Build the HTML to display the results
+                    let html = `
+                        <h6>Assigned Number Details</h6>
+                        <ul>
+                            <li>Phone Number: ${data.assigned_numbers.phone_number}, Details: ${data.assigned_numbers.details}, Assigned At: ${data.assigned_numbers.assigned_at}</li>
+                        </ul>
+                    `;
+                    if (data.user) {
+                        html += `
+                            <h6>User Details</h6>
+                            <ul>
+                                <li>User Name: ${data.user.user}</li>
+                            </ul>
+                        `;
+                    }
+                    searchResults.innerHTML = html;
+                } else if (data.message) {
+                    searchResults.innerHTML = `<p>${data.message}</p>`;
+                } else {
+                    searchResults.innerHTML = `<p>No results found.</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                searchResults.innerHTML = `<p>Error fetching data.</p>`;
+            });
+        });
+    });
+</script>
+{% endblock %}

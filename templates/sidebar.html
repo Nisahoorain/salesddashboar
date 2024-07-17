@@ -1,0 +1,86 @@
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
+    <ul class="sidebar-nav" id="sidebar-nav">
+        {% if session["role"] == 'Admin' %}
+        <li class="nav-item">
+            <a class="nav-link" href="/home" id="dashboard-link">
+                <i class="bi bi-grid"></i>
+                <span>Dashboard</span>
+            </a>
+        </li><!-- End Dashboard Nav -->
+
+        <li class="nav-item">
+            <a class="nav-link" href="/users" id="users-link">
+                <i class="bi bi-person"></i>
+                <span>Users</span>
+            </a>
+        </li><!-- End Users Page Nav -->
+        {% endif %}
+
+        {% if session["role"] != 'Sale Agent' %}
+
+        <li class="nav-item">
+            <a class="nav-link" href="/file" id="files-link">
+                <i class="bi bi-card-list"></i>
+                <span>Files</span>
+            </a>
+        </li><!-- End Files Page Nav -->
+        {% endif %}
+
+        {% if session["role"] != 'Scrapper' %}
+
+        <li class="nav-item">
+            <a class="nav-link" href="/number" id="number-link">
+                <i class="bi bi-list-ol"></i>
+                <span>Numbers & Sales</span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% if session["role"] == 'Admin' %}
+
+        <li class="nav-item">
+            <a class="nav-link" href="/order" id="order-link">
+                <i class="bi bi-command"></i>
+                <span>Orders</span>
+            </a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+            <a class="nav-link" href="/logout" id="logout-link">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign out</span>
+            </a>
+        </li>
+        <!-- End Files Page Nav -->
+        <!-- End Files Page Nav -->
+    </ul>
+
+
+</aside><!-- End Sidebar -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        setActiveLink(); // Call the function when the document is loaded
+
+        function setActiveLink() {
+            const currentPath = window.location.pathname;
+
+            // Get all sidebar links
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+
+            sidebarLinks.forEach(function (link) {
+                const linkPath = link.getAttribute('href');
+
+                // Check if the current path matches the link path
+                if (currentPath === linkPath) {
+                    link.classList.remove('collapsed');
+                    link.setAttribute('aria-expanded', 'true'); // Optionally update aria-expanded attribute
+                } else {
+                    link.classList.add('collapsed');
+                    link.setAttribute('aria-expanded', 'false'); // Optionally update aria-expanded attribute
+                }
+            });
+        }
+    });
+</script>

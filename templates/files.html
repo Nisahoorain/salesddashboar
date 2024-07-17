@@ -1,0 +1,262 @@
+<!-- users-profile.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main id="main" class="main">
+
+  <section class="section profile">
+    <div class="row">
+      <div class="col-xl-12">
+
+        <div class="card">
+          <div class="card-body pt-3">
+            <!-- Bordered Tabs -->
+            <ul class="nav nav-tabs nav-tabs-bordered">
+
+              <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Avaliable
+                  Files</button>
+              </li>
+              <!-- <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Add Numbers to
+                  files</button>
+              </li> -->
+              {% if session["role"] == 'Admin' %}
+
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Current Number
+                  Settings</button>
+              </li>
+
+              {% endif %}
+
+
+            </ul>
+            <div class="tab-content pt-2">
+
+              <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                <!-- {% if session["role"] == 'Scrapper' %} -->
+
+                <form action="/upload_file" method="POST" enctype="multipart/form-data">
+                  <div class="col-5">
+                    <label for="yourFile" class="form-label">Upload File:</label>
+                    <input type="file" name="file" class="form-control" id="yourFile" required>
+                  </div>
+                  <br>
+                  <div class="col-5">
+                    <button class="btn btn-primary w-100" type="submit">Upload</button>
+                  </div>
+                </form>
+                <!-- {% endif %} -->
+
+                {% if message != None%}
+                <div class="alert alert-info" role="alert">
+                  {{ message }}
+                </div>
+                {% endif %}
+
+                <div style="display:flex; justify-content: space-between; align-items:center ;">
+                  <h5 class="card-title">Today's Files</h5>
+                  <div>
+                    <div class="filter">
+                      <a class="icon" href="#" data-bs-toggle="dropdown">Filters<i class="bi bi-filter"
+                          style="margin-left:5px ;"></i></a>
+                      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+
+                        <li><a class="dropdown-item" href="#" onclick="applyFilter('today')">Today</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="applyFilter('this_month')">This Month</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showCustomRange()">Custom Range</a></li>
+                      </ul>
+                    </div>
+                    <form id="filterForm" method="POST">
+                      <input type="hidden" name="filter_option" id="filterOption">
+                      <input type="date" name="start_date" id="startDate" style="display: none;">
+                      <input type="date" name="end_date" id="endDate" style="display: none;">
+                    </form>
+                  </div>
+                </div>
+                <div style="height: 400px; overflow-y: auto;">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">File</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Sorted</th>
+                        <th scope="col">Percentage</th>
+                        <th scope="col">Timestamp</th>
+                        <!-- <th scope="col">Actions</th> -->
+                        <th scope="col">View</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for file_data in files_data %}
+                      <tr>
+                        <td>{{ file_data.filename }}</td>
+                        <td>{{ file_data.username }}</td>
+                        <td>{{ file_data.skip_count }}</td>
+                        <td>{{ file_data.add_count }}</td>
+                        <td>{{ file_data.add_percentage }}%</td>
+                        <td>{{ file_data.upload_time }}</td>
+                        <!-- <td>{{ file_data.upload_time }}</td> -->
+                        <td>
+                          <a href="{{ url_for('view_file', file_id=file_data.id) }}"><i class="bi bi-eye"></i></a>
+                          <!-- <a href=""><i class="bi bi-pencil-square"></i></a> -->
+                        </td>
+                      </tr>
+                      {% endfor %}
+                      <tr>
+                        <td colspan="2"><strong>Total:-</strong></td>
+                        <td><strong>{{ total_skip_count }}</strong></td>
+                        <td><strong>{{ total_add_count }}</strong></td>
+                        <td><strong>{{ total_add_percentage }}%</strong></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+
+                <h5 class="card-title">Individuals Total</h5>
+                <br>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Total</th>
+                      <th scope="col">Sorted</th>
+                      <th scope="col">Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for user_totals in individual_totals %}
+                    <tr>
+                      <td>{{ user_totals.username }}</td>
+                      <td>{{ user_totals.total_skip_count }}</td>
+                      <td>{{ user_totals.total_add_count }}</td>
+                      <td>{{ user_totals.total_add_percentage }}%</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+
+              </div>
+
+
+              <div class="tab-pane fade pt-3" id="profile-settings">
+                <h5 class="card-title">Numbers Addedd by:</h5>
+
+                <br>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Total</th>
+                      <th scope="col">Sorted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for user_totals in individual_totals %}
+                    <tr>
+                      <td>{{ user_totals.username }}</td>
+                      <td>{{ user_totals.total_skip_count }}</td>
+                      <td>{{ user_totals.total_add_count }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <h5 class="card-title">Current Settings</h5>
+                <br>
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Remaining Numbers</th>
+                      <td>{{ remaining_numbers }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Ratio</th>
+                      <td>{{ ratio_per_request }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Time (sec)</th>
+                      <td>{{ time_interval }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <br>
+                <br>
+                <form action="{{ url_for('update_settings') }}" method="POST">
+                  <div class="row mb-3">
+                    <label for="ratioPerRequest" class="col-md-4 col-lg-3 col-form-label">Ratio per Request</label>
+                    <div class="col-md-8 col-lg-9">
+                      <input name="ratio_per_request" type="number" class="form-control" id="ratioPerRequest"
+                        value="{{ ratio_per_request }}">
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <label for="timeInterval" class="col-md-4 col-lg-3 col-form-label">Time Interval (sec)</label>
+                    <div class="col-md-8 col-lg-9">
+                      <input name="time_interval" type="number" class="form-control" id="timeInterval"
+                        value="{{ time_interval }}">
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Apply Settings</button>
+                  </div>
+                </form>
+
+              </div>
+
+
+
+            </div><!-- End Bordered Tabs -->
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main><!-- End #main -->
+<script>
+  // Apply filter immediately for today and this month
+  function applyFilter(option) {
+    document.getElementById('filterOption').value = option;
+    document.getElementById('startDate').style.display = 'none';
+    document.getElementById('endDate').style.display = 'none';
+
+    if (option !== 'custom') {
+      document.getElementById('filterForm').submit();
+    }
+  }
+
+  // Show custom date range inputs
+  function showCustomRange() {
+    document.getElementById('filterOption').value = 'custom';
+    document.getElementById('startDate').style.display = 'inline';
+    document.getElementById('endDate').style.display = 'inline';
+  }
+
+  // Submit the form if both dates are selected
+  function submitCustomRange() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (startDate && endDate) {
+      document.getElementById('filterForm').submit();
+    } else {
+      console.log('Please select both start and end dates.');
+    }
+  }
+
+  // Event listeners for custom date range inputs
+  document.getElementById('startDate').addEventListener('change', submitCustomRange);
+  document.getElementById('endDate').addEventListener('change', submitCustomRange);
+</script>
+
+
+{% endblock %}

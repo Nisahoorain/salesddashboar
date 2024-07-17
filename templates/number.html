@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main id="main" class="main">
+
+  <section class="section profile">
+    <div class="row">
+      <div class="col-xl-12">
+
+        <div class="card">
+          <div class="card-body pt-3">
+            <!-- Bordered Tabs -->
+            <ul class="nav nav-tabs nav-tabs-bordered" id="profileTabs">
+              <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Numbers</button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Approved Sales</button>
+              </li>
+              {% if session["role"] == 'Admin' %}
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Today Requested
+                  Number</button>
+              </li>
+              {% endif %}
+            </ul>
+
+            <div class="tab-content pt-2">
+              <!-- Numbers Tab -->
+              <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                {% if session["role"] == 'Sale Agent' %}
+                <form method="post" action="{{ url_for('get_number') }}">
+                  <div class="col-5">
+                    <button class="btn btn-primary w-100" type="submit">Get Number</button>
+                  </div>
+                </form>
+                {% endif %}
+
+                {% if message %}
+                <div class="alert alert-info" role="alert">
+                  {{ message }}
+                </div>
+                {% endif %}
+
+
+
+                <div style="display: flex; justify-content: space-between;align-items: center;">
+                  <h5 class="card-title">Today Number History:</h5>
+                  <div>
+                    <div class="filter">
+                      <a class="icon" href="#" data-bs-toggle="dropdown">Filters<i class="bi bi-filter"
+                          style="margin-left: 5px;"></i></a>
+                      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <li><a class="dropdown-item" href="#" onclick="applyFilter('today', 'numbers')">Today</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="applyFilter('this_month', 'numbers')">This
+                            Month</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showCustomRange('numbers')">Custom Range</a></li>
+                      </ul>
+                    </div>
+
+                    <form id="filterFormNumbers" method="POST" action="{{ url_for('number') }}">
+                      <input type="hidden" name="filter_option" id="filterOptionNumbers">
+                      <input type="date" name="start_date" id="startDateNumbers" style="display: none;">
+                      <input type="date" name="end_date" id="endDateNumbers" style="display: none;">
+                    </form>
+                  </div>
+                </div>
+                <div style="height: 400px; overflow-y: auto;">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Number</th>
+                        <th scope="col">Detail</th>
+                        <th scope="col">Date</th>
+                        {% if session['role'] == 'Admin' %}
+                        <th>Assigned To</th>
+                        {% endif %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for number in numbers %}
+                      <tr>
+                        <td>{{ number.phone_number }}</td>
+                        <td>{{ number.details }}</td>
+                        <td>{{ number.assigned_at }}</td>
+                        {% if session['role'] == 'Admin' %}
+                        <td>{{ number.assigned_to }}</td>
+                        {% endif %}
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Sales Tab -->
+              <div class="tab-pane fade pt-3" id="profile-settings">
+
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <h5 class="card-title">Today Sales:</h5>
+                  <div>
+                    <div class="filter">
+                      <a class="icon" href="#" data-bs-toggle="dropdown">Filters<i class="bi bi-filter" style="margin-left: 5px;"></i></a>
+                      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <li><a class="dropdown-item" href="#" onclick="applyFilter('today', 'sales')">Today</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="applyFilter('this_month', 'sales')">This
+                            Month</a>
+                        </li>
+                        <li><a class="dropdown-item" href="#" onclick="showCustomRange('sales')">Custom Range</a></li>
+                      </ul>
+                    </div>
+
+                    <form id="filterFormSales" method="POST" action="{{ url_for('number') }}">
+                      <input type="hidden" name="filter_option" id="filterOptionSales">
+                      <input type="date" name="start_date" id="startDateSales" style="display: none;">
+                      <input type="date" name="end_date" id="endDateSales" style="display: none;">
+                    </form>
+                  </div>
+                </div>
+                <br>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Order ID</th>
+                      <th scope="col">Customer Phone</th>
+                      <th scope="col">Package</th>
+                      <th scope="col">Agent</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for order in approved_orders %}
+                    <tr>
+                      <td>{{ order.order_id }}</td>
+                      <td>{{ order.customer_phone }}</td>
+                      <td>{{ order.package }}</td>
+                      <td>{{ order.agent_name }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Requested Numbers Tab -->
+              <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                <div class="filter">
+                  <a class="icon" href="#" data-bs-toggle="dropdown">Filters<i class="bi bi-filter" style="margin-left: 5px;"></i></a>
+                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <li><a class="dropdown-item" href="#" onclick="applyFilter('today', 'requests')">Today</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="applyFilter('this_month', 'requests')">This Month</a>
+                    </li>
+                    <li><a class="dropdown-item" href="#" onclick="showCustomRange('requests')">Custom Range</a></li>
+                  </ul>
+                </div>
+
+                <form id="filterFormRequests" method="POST" action="{{ url_for('number') }}">
+                  <input type="hidden" name="filter_option" id="filterOptionRequests">
+                  <input type="date" name="start_date" id="startDateRequests" style="display: none;">
+                  <input type="date" name="end_date" id="endDateRequests" style="display: none;">
+                </form>
+
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">User</th>
+                      <th scope="col">Requests</th>
+                      <th scope="col">Last Request Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for request in user_requests %}
+                    <tr>
+                      <td>{{ request.user }}</td>
+                      <td>{{ request.requests }}</td>
+                      <td>{{ request.last_request_time }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div><!-- End Bordered Tabs -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main><!-- End #main -->
+
+<!-- JavaScript to handle filter logic and remember active tab -->
+<script>
+  function applyFilter(option, type) {
+    document.getElementById('filterOption' + capitalizeFirstLetter(type)).value = option;
+    document.getElementById('startDate' + capitalizeFirstLetter(type)).style.display = 'none';
+    document.getElementById('endDate' + capitalizeFirstLetter(type)).style.display = 'none';
+
+    if (option !== 'custom') {
+      document.getElementById('filterForm' + capitalizeFirstLetter(type)).submit();
+    }
+  }
+
+  function showCustomRange(type) {
+    document.getElementById('filterOption' + capitalizeFirstLetter(type)).value = 'custom';
+    document.getElementById('startDate' + capitalizeFirstLetter(type)).style.display = 'inline';
+    document.getElementById('endDate' + capitalizeFirstLetter(type)).style.display = 'inline';
+  }
+
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  document.getElementById('startDateNumbers').addEventListener('change', function () {
+    if (document.getElementById('endDateNumbers').value) {
+      document.getElementById('filterFormNumbers').submit();
+    }
+  });
+
+  document.getElementById('endDateNumbers').addEventListener('change', function () {
+    if (document.getElementById('startDateNumbers').value) {
+      document.getElementById('filterFormNumbers').submit();
+    }
+  });
+
+  document.getElementById('startDateSales').addEventListener('change', function () {
+    if (document.getElementById('endDateSales').value) {
+      document.getElementById('filterFormSales').submit();
+    }
+  });
+
+  document.getElementById('endDateSales').addEventListener('change', function () {
+    if (document.getElementById('startDateSales').value) {
+      document.getElementById('filterFormSales').submit();
+    }
+  });
+
+  document.getElementById('startDateRequests').addEventListener('change', function () {
+    if (document.getElementById('endDateRequests').value) {
+      document.getElementById('filterFormRequests').submit();
+    }
+  });
+
+  document.getElementById('endDateRequests').addEventListener('change', function () {
+    if (document.getElementById('startDateRequests').value) {
+      document.getElementById('filterFormRequests').submit();
+    }
+  });
+
+  // Remember active tab
+  document.addEventListener('DOMContentLoaded', function () {
+    var activeTab = localStorage.getItem('activeTab');
+    if (activeTab) {
+      var tabElement = document.querySelector('[data-bs-target="' + activeTab + '"]');
+      if (tabElement) {
+        tabElement.click();
+      }
+    }
+
+    document.querySelectorAll('.nav-link').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var target = tab.getAttribute('data-bs-target');
+        localStorage.setItem('activeTab', target);
+      });
+    });
+  });
+</script>
+
+{% endblock %}
